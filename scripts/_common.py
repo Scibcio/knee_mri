@@ -4,7 +4,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def config():
-    cfg = json.loads((ROOT / 'configs' / 'project.json').read_text())
+    cfg = json.loads((ROOT / 'configs' / 'project.json').read_text(encoding='utf-8'))
     if cfg['kaggle_user'].startswith('YOUR-'):
         sys.exit('Set your Kaggle username in configs/project.json first.')
     return cfg
@@ -17,7 +17,7 @@ def kaggle(*args, dry=False):
     if dry: return ''
     if not shutil.which('kaggle'):
         sys.exit('kaggle command not found: activate the .venv and run `pip install -r requirements.txt`.')
-    p = subprocess.run(cmd, capture_output=True, text=True)
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
     out = (p.stdout + p.stderr).strip()
     print(out)
     return out if p.returncode == 0 else f'FAILED: {out}'

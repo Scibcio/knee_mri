@@ -15,8 +15,8 @@ version = git_version()
 stage = ROOT / 'build' / 'kaggle-code'
 shutil.rmtree(stage, ignore_errors=True)
 shutil.copytree(ROOT / 'kneemri', stage / 'kneemri', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-(stage / 'build_info.json').write_text(json.dumps(dict(commit=version, built=time.strftime('%Y-%m-%d %H:%M:%S')), indent=1))
-(stage / 'dataset-metadata.json').write_text(json.dumps(dict(title=cfg['code_dataset'], id=slug, licenses=[dict(name='CC0-1.0')]), indent=1))
+(stage / 'build_info.json').write_text(json.dumps(dict(commit=version, built=time.strftime('%Y-%m-%d %H:%M:%S')), indent=1), encoding='utf-8')
+(stage / 'dataset-metadata.json').write_text(json.dumps(dict(title=cfg['code_dataset'], id=slug, licenses=[dict(name='CC0-1.0')]), indent=1), encoding='utf-8')
 print(f'prepared {stage} (code version {version})')
 if version.endswith('-dirty'):
     print('note: you have uncommitted changes; commit first so every Kaggle run maps to a git commit')
