@@ -5,14 +5,25 @@ The task is notebooks/tasks/<task>.py; notebooks/runner/bootstrap.py is put in f
 Settings come from notebooks/runner/kernel-metadata.json; a task can change them with a first line like
     # kaggle: {"enable_internet": "true", "dataset_sources": ["{user}/some-dataset"]}
 (lists are added to the defaults, other values replace them).
+Task options go after the task name as NAME=VALUE and arrive in the task as PARAMS['NAME'].
 
-    python scripts/kaggle_run.py hello        add --dry-run to only prepare build/runner
+    python scripts/kaggle_run.py hello                 add --dry-run to only prepare build/runner
+    python scripts/kaggle_run.py inventory LIMIT=50
 """
-import json, shutil, sys, time
+import ast, json, shutil, sys, time
 from _common import ROOT, config, kaggle, wait_for_dataset
 
 dry = '--dry-run' in sys.argv
-task = next(a for a in sys.argv[1:] if not a.startswith('--'))
+args = [a for a in sys.argv[1:] if not a.startswith('--')]
+task = next(a for a in args if '=' not in a)
+
+
+def literal(v):
+    try: return ast.literal_eval(v)
+    except (ValueError, SyntaxError): return v
+
+
+params = {k: literal(v) for k, v in (a.split('=', 1) for a in args if '=' in a)}
 cfg = config()
 user = cfg['kaggle_user']
 runner = ROOT / 'notebooks' / 'runner'
@@ -29,7 +40,7 @@ stage = ROOT / 'build' / 'runner'
 shutil.rmtree(stage, ignore_errors=True)
 stage.mkdir(parents=True)
 bootstrap = (runner / 'bootstrap.py').read_text(encoding='utf-8')
-(stage / 'run.py').write_text(f'{bootstrap}\nprint("task: {task}")\n\n{code}', encoding='utf-8')
+(stage / 'run.py').write_text(f'{bootstrap}\nPARAMS.update({params!r})\nprint("task: {task}", PARAMS)\n\n{code}', encoding='utf-8')
 (stage / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2), encoding='utf-8')
 ref = meta['id']
 

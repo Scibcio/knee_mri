@@ -3,6 +3,7 @@ import glob, os, sys, tarfile, zipfile
 
 INPUT = os.environ.get('KNEEMRI_KAGGLE_INPUT', '/kaggle/input')
 WORKING = os.environ.get('KNEEMRI_KAGGLE_WORKING', '/kaggle/working')
+PARAMS = {}  # task options; kaggle_run.py fills them from NAME=VALUE arguments
 
 
 def find_code():
