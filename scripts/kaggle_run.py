@@ -9,11 +9,12 @@ Settings come from notebooks/runner/kernel-metadata.json; a task can change them
     python scripts/kaggle_run.py hello        add --dry-run to only prepare build/runner
 """
 import json, shutil, sys, time
-from _common import ROOT, config, kaggle
+from _common import ROOT, config, kaggle, wait_for_dataset
 
 dry = '--dry-run' in sys.argv
 task = next(a for a in sys.argv[1:] if not a.startswith('--'))
-user = config()['kaggle_user']
+cfg = config()
+user = cfg['kaggle_user']
 runner = ROOT / 'notebooks' / 'runner'
 code = (ROOT / 'notebooks' / 'tasks' / f'{task}.py').read_text(encoding='utf-8')
 
@@ -32,10 +33,17 @@ bootstrap = (runner / 'bootstrap.py').read_text(encoding='utf-8')
 (stage / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2), encoding='utf-8')
 ref = meta['id']
 
+for ds in [] if dry else meta['dataset_sources']:  # check the inputs first, so a run never starts without them
+    status = wait_for_dataset(ds)
+    if status != 'ready':
+        hint = 'run `python scripts/push_code.py` first' if ds.endswith('/' + cfg['code_dataset']) else 'check its name, and that you can open it on kaggle.com'
+        sys.exit(f'input dataset {ds} is {status}: {hint}')
+
 out = kaggle('kernels', 'push', '-p', stage, dry=dry)
 if dry:
     print(f'prepared {stage}'); sys.exit()
 if 'error' in out.lower() or out.startswith('FAILED'): sys.exit('push failed, see the message above')
+if 'not valid' in out.lower(): sys.exit('Kaggle could not attach an input (message above), so this run will fail: fix that and run again')
 
 print(f'\nrunning "{task}" on Kaggle: https://www.kaggle.com/code/{ref}')
 start, seen_running = time.time(), False

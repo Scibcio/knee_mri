@@ -4,7 +4,7 @@ Kaggle notebooks attach that dataset, so they run exactly the code in this repo.
     python scripts/push_code.py "what changed"     add --dry-run to only prepare build/kaggle-code
 """
 import json, shutil, sys, time
-from _common import ROOT, config, git_version, kaggle
+from _common import ROOT, config, git_version, kaggle, wait_for_dataset
 
 dry = '--dry-run' in sys.argv
 msg = next((a for a in sys.argv[1:] if not a.startswith('--')), None)
@@ -19,7 +19,7 @@ shutil.copytree(ROOT / 'kneemri', stage / 'kneemri', ignore=shutil.ignore_patter
 (stage / 'dataset-metadata.json').write_text(json.dumps(dict(title=cfg['code_dataset'], id=slug, licenses=[dict(name='CC0-1.0')]), indent=1), encoding='utf-8')
 print(f'prepared {stage} (code version {version})')
 if version.endswith('-dirty'):
-    print('note: you have uncommitted changes; commit first so every Kaggle run maps to a git commit')
+    print('note: uncommitted changes - fine while testing; commit once everything works')
 
 if dry:
     print('first upload would run:'); kaggle('datasets', 'create', '-p', stage, '-r', 'zip', dry=True)
@@ -30,4 +30,7 @@ if not status.startswith('FAILED') and any(w in status.lower() for w in ('ready'
     kaggle('datasets', 'version', '-p', stage, '-m', msg or f'code {version}', '-r', 'zip')
 else:
     kaggle('datasets', 'create', '-p', stage, '-r', 'zip')
-print(f'\nhttps://www.kaggle.com/datasets/{slug}  (private; takes a minute to process)')
+print('\nwaiting for Kaggle to process the upload...')
+status = wait_for_dataset(slug)
+print(f'\n{slug} is {status}: https://www.kaggle.com/datasets/{slug}')
+if status != 'ready': sys.exit('the upload did not become ready; check the dataset page on kaggle.com')
