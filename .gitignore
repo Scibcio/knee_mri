@@ -1,0 +1,32 @@
+# Data never goes into git: it is big, and the competition rules forbid sharing it
+knee-data/
+runs/
+build/
+*.csv
+*.parquet
+*.npy
+*.npz
+*.dcm
+*.zip
+
+# Model weights
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Secrets
+kaggle.json
+access_token
+.env
+
+# Python and editor clutter
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Private notes (kept on your PC only)
+docs/data-plan.md

@@ -1,0 +1,14 @@
+{
+  "id": "{user}/kneemri-00-hello",
+  "title": "kneemri 00 hello",
+  "code_file": "hello.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_internet": "false",
+  "dataset_sources": ["{user}/kneemri-code"],
+  "competition_sources": ["rsna-knee-abnormality-detection"],
+  "kernel_sources": [],
+  "model_sources": []
+}
