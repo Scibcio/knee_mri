@@ -29,4 +29,4 @@ venv/
 .ipynb_checkpoints/
 
 # Private notes (kept on your PC only)
-docs/data-plan.md
+data-plan.md
